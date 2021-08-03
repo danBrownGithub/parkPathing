@@ -549,93 +549,84 @@ void useOrderedMap(map<string,map<string,map<int,int>>> &disneyOrdered, bool &lo
     vector<Ride> toVisit;
     vector<Ride> visitOrder;
 
-    //auto start = chrono::high_resolution_clock::now();
-        cout << "Enter todays date (m/dd): ";
-        cin >> date;
-            
-        cout << "Enter the current time (hmm): ";
-        cin >> time;
+    cout << "Enter todays date (m/dd): ";
+    cin >> date;
 
-        cout << "Enter the number of attractions you want to visit: ";
-        cin >> rideCount;
+    cout << "Enter the current time (hmm): ";
+    cin >> time;
 
-        printRidesList();
+    cout << "Enter the number of attractions you want to visit: ";
+    cin >> rideCount;
 
-        //grabbing and adding to a vector where user wants to go
-        for (int i =0;i<rideCount;i++)
+    printRidesList();
+
+    //grabbing and adding to a vector where user wants to go
+    for (int i =0;i<rideCount;i++)
+    {
+        std::cout << "Enter the index of the next ride: ";
+        std::cin >> rideIndex;
+        AddRideToList(rideIndex, toVisit);
+    }
+
+    vector<int> currentTime;
+    currentTime.push_back(time);
+
+    auto start = chrono::high_resolution_clock::now();
+    while (toVisit.size() != 0)
+    {
+        for (int i = 0; i < toVisit.size(); i++)
         {
-            std::cout << "Enter the index of the next ride: ";
-            std::cin >> rideIndex;
-            AddRideToList(rideIndex, toVisit);
+            toVisit[i].waitTime = disneyOrdered[toVisit[i].name][date][time];
         }
 
-        vector<int> currentTime;
+        int minIndex = 0;
+        Ride minRide;
+        minRide = toVisit[0];
+
+        for (int i = 0;i<toVisit.size();i++)
+        {
+            if (minRide.waitTime > toVisit[i].waitTime)
+                {
+                    minRide = toVisit[i];
+                    minIndex = i;
+                }
+        }
+        visitOrder.push_back(minRide);
+        toVisit.erase(toVisit.begin() + minIndex);
+        addTime(time, minRide);
         currentTime.push_back(time);
+    }
 
-        auto start = chrono::high_resolution_clock::now();
-        while (toVisit.size() != 0)
-        {
-            for (int i = 0; i < toVisit.size(); i++)
-            {
-                toVisit[i].waitTime = disneyOrdered[toVisit[i].name][date][time];
-                //cout << toVisit[i].name << " wait time: " << toVisit[i].waitTime << endl;
-                
-                
-            }
+    cout << "Schedule" << endl;
+    cout << "----------------------" << endl;
+    for (int i = 0; i < visitOrder.size(); i++)
+    {
+        cout << "Time: " << currentTime[i] << " || " << visitOrder[i].name << ": " << visitOrder[i].waitTime << " minutes" << endl;
+    }
 
-            int minIndex = 0;
-            Ride minRide;
-            minRide = toVisit[0];
-            
-            for (int i = 0;i<toVisit.size();i++)
-            {
-                if (minRide.waitTime > toVisit[i].waitTime)
-                    {
-                        minRide = toVisit[i];
-                        minIndex = i;
-                    }
-            }
-            //cout<< "Out of the "<<toVisit.size()<<" rides checked "<<minRide.name<<" has the shortest at: "<<minRide.waitTime<<endl;
-            visitOrder.push_back(minRide);
-            toVisit.erase(toVisit.begin() + minIndex);
-            addTime(time, minRide);
-            currentTime.push_back(time);
-        }
+    auto stop = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::milliseconds>(stop - start);
+    cout << "Elapsed time to calculate data using an ordered map is: " << duration.count() << " milliseconds" << endl << endl;
 
-        cout << "Schedule" << endl;
-        cout << "----------------------" << endl;
-        for (int i = 0; i < visitOrder.size(); i++)
-        {
-            cout << "Time: " << currentTime[i] << " || " << visitOrder[i].name << ": " << visitOrder[i].waitTime << " minutes" << endl;
-        }
-        
-        auto stop = chrono::high_resolution_clock::now();
-        auto duration = chrono::duration_cast<chrono::milliseconds>(stop - start);
-        cout << "Elapsed time to calculate data using an ordered map is: " << duration.count() << " milliseconds" << endl << endl;
+    cout << "Would you like to restart(y/n): ";
+    cin >> restart;
 
-        cout << "Would you like to restart(y/n): ";
-        cin >> restart;
-
-        if(restart == 'n'){
-            loop = true;
-            return;
-            //return 0;   
-        } 
-        else {
-            cout<<"Clearing maps..."<<endl;
-            disneyOrdered.clear();
-            toVisit.clear();
-            visitOrder.clear();
-            currentTime.clear();
-            time = 0;
-            date = "";
-            rideCount = 0;
-        }
-        
-
-    //auto stop = chrono::high_resolution_clock::now();
-    //auto duration = chrono::duration_cast<chrono::seconds>(stop - start);
-    //cout << "Elapsed time is: " << duration.count() << endl;
+    if(restart == 'n')
+    {
+        loop = true;
+        return;
+    } 
+    else 
+    {
+        cout<<"Clearing maps..."<<endl;
+        disneyOrdered.clear();
+        toVisit.clear();
+        visitOrder.clear();
+        currentTime.clear();
+        time = 0;
+        date = "";
+        rideCount = 0;
+    }
 }
 
 void useUnorderedMap(unordered_map<string,unordered_map<string,unordered_map <int,int>>> &disneyUnordered, bool &loop)
@@ -713,11 +704,13 @@ void useUnorderedMap(unordered_map<string,unordered_map<string,unordered_map <in
         cout << "Would you like to restart(y/n): ";
         cin >> restart;
 
-        if(restart == 'n') {
+        if(restart == 'n') 
+        {
             loop = true;
             return;
         } 
-        else {
+        else 
+        {
             cout<<"Clearing maps..."<<endl;
             disneyUnordered.clear();
             toVisit.clear();
@@ -731,15 +724,9 @@ void useUnorderedMap(unordered_map<string,unordered_map<string,unordered_map <in
 
 int main()
 {
-    //int rideCount;
-    //int rideIndex;
     int dataStructureSelection;
-    //int month;
-    //int day;
-    //int time;
     bool loop = false;
     char restart;
-    //string date;
     map<string,map<string,map<int,int>>> disneyOrdered;
     unordered_map<string,unordered_map<string,unordered_map <int,int>>> disneyUnordered;
 
@@ -751,38 +738,6 @@ int main()
     "Seven Dwarfs Mine Train","Space Mountain","Splash Mountain","Thunder Mountain","Tomorrowland Speedway","Winnie the Pooh"};
 
     string months[12] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
-
-    // auto startUnorderedLoad = chrono::high_resolution_clock::now();
-    // for (int i=0; i < 24; i++)
-    // {
-    //     cout << "Loading current ride file using unordered map " << "(" << i  + 1 << "/24): " <<  rides[i] << endl;
-    //     for (int j = 0; j < 12; j++)
-    //     {
-    //         //read_file(rides[i],months[j], disneyOrdered, disneyUnordered);
-            
-    //         unorderedMapReadFile(rides[i],months[j], disneyUnordered);
-    //     }
-
-    // }
-    // auto stopUnorderedLoad = chrono::high_resolution_clock::now();
-    // auto unorderedDurataion = chrono::duration_cast<chrono::seconds>(stopUnorderedLoad - startUnorderedLoad);
-    
-    
-    // auto startOrderedLoad = chrono::high_resolution_clock::now();
-    // for (int i=0; i < 24; i++)
-    // {
-    //     cout << "Loading current ride file using ordered map " << "(" << i  + 1 << "/24): " <<  rides[i] << endl;
-    //     for (int j = 0; j < 12; j++)
-    //     {
-    //         //read_file(rides[i],months[j], disneyOrdered, disneyUnordered);
-    //         orderedMapReadFile(rides[i],months[j], disneyOrdered);
-    //     }
-    // }
-    // auto stopOrderedLoad = chrono::high_resolution_clock::now();
-    // auto orderedDuration = chrono::duration_cast<chrono::seconds>(stopOrderedLoad - startOrderedLoad);
-    
-    // cout << "Elapsed time to read files using an ordered map is: " << duration.count() << " seconds" << endl;
-    // cout << "Elapsed time to read files using an unordered map is: " << duration.count() << " seconds" << endl;
 
     while(!loop)
     {
@@ -802,7 +757,6 @@ int main()
                     cout << "Loading current ride file using ordered map " << "(" << i  + 1 << "/24): " <<  rides[i] << endl;
                     for (int j = 0; j < 12; j++)
                     {
-                        //read_file(rides[i],months[j], disneyOrdered, disneyUnordered);
                         orderedMapReadFile(rides[i],months[j], disneyOrdered);
                     }
                 }
@@ -838,79 +792,6 @@ int main()
                 break;
             }
         }
-        
-        
-        // cout << "Enter todays date (m/dd): ";
-        // cin >> date;
-            
-        // cout << "Enter the current time (hmm): ";
-        // cin >> time;
-
-        // cout << "Enter the number of attractions you want to visit: ";
-        // cin >> rideCount;
-
-        // printRidesList();
-
-        // //grabbing and adding to a vector where user wants to go
-        // for (int i =0;i<rideCount;i++)
-        // {
-        //     std::cout << "Enter the index of the next ride: ";
-        //     std::cin >> rideIndex;
-        //     AddRideToList(rideIndex, toVisit);
-        // }
-
-        // vector<int> currentTime;
-        // currentTime.push_back(time);
-
-        // while (toVisit.size() != 0)
-        // {
-        //     for (int i = 0; i < toVisit.size(); i++)
-        //     {
-        //         toVisit[i].waitTime = disneyOrdered[toVisit[i].name][date][time];
-        //         cout << toVisit[i].name << " wait time: " << toVisit[i].waitTime << endl;
-        //     }
-
-        //     int minIndex = 0;
-        //     Ride minRide;
-        //     minRide = toVisit[0];
-            
-        //     for (int i = 0;i<toVisit.size();i++)
-        //     {
-        //         if (minRide.waitTime > toVisit[i].waitTime)
-        //             {
-        //                 minRide = toVisit[i];
-        //                 minIndex = i;
-        //             }
-        //     }
-        //     cout<< "Out of the "<<toVisit.size()<<" rides checked "<<minRide.name<<" has the shortest at: "<<minRide.waitTime<<endl;
-        //     visitOrder.push_back(minRide);
-        //     toVisit.erase(toVisit.begin() + minIndex);
-        //     addTime(time, minRide);
-        //     currentTime.push_back(time);
-        // }
-
-        // cout << "Schedule" << endl;
-        // cout << "----------------------" << endl;
-        // for (int i = 0; i < visitOrder.size(); i++)
-        // {
-        //     cout << "Time: " << currentTime[i] << "||" << visitOrder[i].name << ": " << visitOrder[i].waitTime << " minutes" << endl;
-        // }
-        
-
-        // cout << "Would you like to restart(y/n): ";
-        // cin >> restart;
-
-        // if(restart == 'n'){
-        //     return 0;   
-        // } 
-        // else {
-        //     toVisit.clear();
-        //     visitOrder.clear();
-        //     currentTime.clear();
-        //     time = 0;
-        //     date = "";
-        //     rideCount = 0;
-        // }
-
+       
     }
 }
