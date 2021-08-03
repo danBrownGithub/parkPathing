@@ -1,16 +1,16 @@
 #include <typeinfo>
 #include <string>
 #include <iostream>
-
+#include <stdio.h>
 
 template <typename uniKey, typename data> 
 class UnorderedMap
 {
 
     public:
-    class Bucket
+    struct Bucket
     {
-        public:
+        
         bool filled;
         uniKey key;
         data value;
@@ -24,12 +24,12 @@ class UnorderedMap
 
     
     void insert(uniKey _key, data _value);
-    data* search(uniKey _key);
+    Bucket* search(uniKey _key);
     int hash(int _key);
     int hash (std::string _key);
     void refactor();
     void size();
-    data* operator[](uniKey _key);
+    Bucket* operator[](uniKey _key);
 
     Bucket* table;
 };
@@ -58,7 +58,8 @@ void UnorderedMap<uniKey,data>::insert(uniKey _key, data _value)
 {
 
     auto insertIndex = hash(_key)%numBucket;
-    std::cout<<insertIndex<<std::endl;
+    //std::cout<<insertIndex<<std::endl;
+   
     if (table[insertIndex].filled==false)
     {
         table[insertIndex].key=_key;
@@ -89,7 +90,17 @@ void UnorderedMap<uniKey,data>::insert(uniKey _key, data _value)
 template <typename uniKey, typename data> 
 int UnorderedMap<uniKey,data>::hash(int _key)
 {
-    return _key%numBucket;
+    int powerOf=10;
+    int val=0;
+    int valToReturn=0;
+    while (_key/powerOf>1)
+    {
+        val=_key%powerOf;
+        powerOf*=10;
+        valToReturn=val*powerOf;
+
+    }
+    
 }
 
 
@@ -108,8 +119,10 @@ int UnorderedMap<uniKey,data>::hash(std::string _key)
 template <typename uniKey, typename data> 
 void UnorderedMap<uniKey,data>::refactor()
 {
+    
     auto factor = 1/critLoad;
-    Bucket* temp = new Bucket[(int)(numBucket*factor)];
+    auto tempBucket=(int)(numBucket*factor);
+    Bucket* temp = new Bucket[tempBucket];
 
     for (int i =0;i<numBucket;i++)
     {
@@ -137,18 +150,22 @@ void UnorderedMap<uniKey,data>::refactor()
             }
         } 
     }
-    numBucket=numBucket*factor;
+    numBucket=tempBucket;
+    
     delete[] table;
+    
     table=temp;
+    
 }
 
 template <typename uniKey, typename data> 
-data* UnorderedMap<uniKey,data>::search(uniKey _key)
+typename UnorderedMap<uniKey,data>::Bucket* UnorderedMap<uniKey,data>::search(uniKey _key)
 {
     auto insertIndex = hash(_key)%numBucket;
+    auto stopper = insertIndex;
     if (table[insertIndex].key==_key)
-    {
-        return &table[insertIndex].value;
+    {   
+        return &table[insertIndex];
     }
     else if (table[insertIndex].key!=_key)
     {
@@ -159,14 +176,19 @@ data* UnorderedMap<uniKey,data>::search(uniKey _key)
             
             if ((insertIndex==numBucket))
             {
-                std::cout<<"not found"<<std::endl;
+                insertIndex=0;
+                //std::cout<<"not found"<<std::endl;
+                
+            }
+            if (insertIndex==stopper)
+            {
                 return nullptr;
             }
 
         }
         if (table[insertIndex].key==_key)
         {
-            return &table[insertIndex].value;
+            return &table[insertIndex];
         }
     }
     return nullptr;
@@ -174,8 +196,17 @@ data* UnorderedMap<uniKey,data>::search(uniKey _key)
 }
 
 template <typename uniKey, typename data> 
-data* UnorderedMap<uniKey,data>::operator[](uniKey _key)
+typename UnorderedMap<uniKey,data>::Bucket* UnorderedMap<uniKey,data>::operator[](uniKey _key)
 {
-    return search(_key);
+    if (search(_key)==nullptr)
+    {
+        data temp;
+        insert(_key,temp);
+        return search(_key);
+    }
+    else
+    {
+        return search(_key);
+    }
 };
 
